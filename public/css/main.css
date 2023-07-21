@@ -33,7 +33,7 @@ img {
   max-width: 100%;
 }
 
-.wrapper {
+.wrapper { 
   overflow: hidden;
   position: relative;
 }
@@ -49,7 +49,7 @@ img {
   max-width: 800px;
   margin: 0 auto;
   padding: 0 15px;
-  text-align: right;
+  text-align: left;
 }
 
 .nav-logo {
@@ -283,7 +283,7 @@ img {
 
   .archive {
     text-align: left;
-  }
+  } 
 
   .archive-title {
     font-size: 38px;

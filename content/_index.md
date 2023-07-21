@@ -19,4 +19,6 @@ Hi! I'm a biostatistics PhD student at Harvard University, advised by [Rachel Ne
 
 Before grad school, I did my undergrad at Colby College in Waterville, Maine. After graduating, I spent three years working as a research assistant at the Federal Reserve Bank of Boston.
 
+You can contact me at `keithbarnatchez@g.harvard.edu`
+
 ### News
