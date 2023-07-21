@@ -7,7 +7,7 @@ You can find all annotated lab notes (+ some additional material) for each secti
 
 - Lab 1 (intro to Stata) 
 - Lab 2 (probability)
-    - Extra: Bayes Rule in pictures
+    - Extra: [Bayes Rule in pictures](../files/bst201/bayes-in-pictures.pdf)
 - Lab 3 (more probability)
 - Lab 4 
 - Lab 5 (Central Limit Theorem)
