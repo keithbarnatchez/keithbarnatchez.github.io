@@ -1,0 +1,24 @@
+{
+    "id": "A75A1B3A",
+    "path": "/Volumes/platform/ws/donahue/ALS DVT/DataCleaningScript06_21_2023.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "2863023821",
+    "contents": "",
+    "dirty": true,
+    "created": 1690308775251.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1687787911,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1687787911,
+    "read_only": false,
+    "read_only_alternatives": []
+}

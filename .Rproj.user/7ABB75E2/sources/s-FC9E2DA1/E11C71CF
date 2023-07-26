@@ -3,7 +3,7 @@
     "path": "~/Dropbox/website/content/_index.Rmd",
     "project_path": "content/_index.Rmd",
     "type": "r_markdown",
-    "hash": "0",
+    "hash": "3805025552",
     "contents": "",
     "dirty": false,
     "created": 1689950271530.0,
@@ -13,15 +13,15 @@
         "tempName": "Untitled2",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "23,52",
-        "scrollLine": "20"
+        "cursorPosition": "21,68",
+        "scrollLine": "17"
     },
     "folds": "",
-    "lastKnownWriteTime": 1689979684,
+    "lastKnownWriteTime": 1690383672,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1689979684318,
+    "last_content_update": 1690383672358,
     "read_only": false,
     "read_only_alternatives": []
 }

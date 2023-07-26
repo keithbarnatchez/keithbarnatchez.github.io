@@ -1,0 +1,334 @@
+library(openxlsx)
+library(sqldf)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+
+#Reading In the Data and renaming the MRN field
+
+setwd("//rfawin.partners.org/mgh-biostats/als/platform/ws/donahue/ALS DVT")
+m<-read.xlsx("MasterDataset.xlsx")
+l<-read.xlsx("LabData.xlsx")
+t<-read.xlsx("Thresholdslookuptable.xlsx")
+names(m)[2]<-"PMRN"
+names(l)[2]<-"PMRN"
+
+#Dates are getting clobbered so needs to be fixed
+m$BMIDate<-convertToDate(m$BMI_Date)
+m$DOBDate<-convertToDate(m$DOB)
+m$MNDDiagnosisDate<-convertToDate(m$MND.Diagnosis.Date)
+m$MNDOnset<-convertToDate(m$MND.onset.date.for.formula)
+m$SVCFVCDate<-convertToDate(m$`SVC/FVC.Date`)
+m$ALSFRSRDate<-convertToDate(m$ALSFRS_R_Date)
+m$VTEDate<-convertToDate(m$VTE_Date)
+
+
+#Datediffs between VTEs and ALS symptom start dates
+
+m$VTEALSdiff<-interval(m$MNDDiagnosisDate, m$VTEDate) %/% months(1)
+
+
+#Checking PMRNs from lab values and master
+
+l_table1<-sqldf("select distinct PMRN from l")
+m_table1<-sqldf("select distinct PMRN from m")
+
+anti_join(l_table1, m_table1, by='PMRN')
+anti_join(m_table1, l_table1, by='PMRN')
+
+#Everyone's accounted for
+
+#joining labs in with the lookups and writing back over to excel for the text values, reading back in
+labs<-left_join(l, t, by=c('Group_Id'='Group.ID', 'Test_Id'='TEST.ID', 'Reference_Range'='Reference.Range'))
+#write.xlsx(labs, "labs.xlsx")
+labs<-read.xlsx("labs.xlsx")
+labs$TestDate<-convertToDate(l$Seq_Date_Time)
+
+#coverting Results and Lookups to numeric
+labs$Resultnum<-as.numeric(labs$Result)
+labs$verylowthreshnum<-as.numeric(labs$Very.Low.Threshold.Value)
+labs$lowthreshnum<-as.numeric(labs$Low.Threshold.Value)
+labs$highthreshnum<-as.numeric(labs$High.Threshold.Value)
+labs$veryhighthreshnum<-as.numeric(labs$Very.High.Threshold.Value)
+
+#labs<-labs%>%mutate_at(c('Result', 'Very.Low.Threshold.Value', 'Low.Threshold.Value', 'High.Threshold.Value', 'Very.High.Threshold.Value'), as.numeric)
+#https://stackoverflow.com/questions/61377858/mutate-at-to-rename-multiple-variables-without-altering-original-columns
+
+#building in logic to turn the values into binary categories, separate from text based levels
+labs$verylow<-ifelse(labs$Resultnum<labs$verylowthreshnum, 1, 0)
+labs$low<-ifelse(labs$Resultnum>labs$verylowthreshnum&labs$Resultnum<labs$lowthreshnum|labs$LowThreshText==1, 1, 0)
+labs$high<-ifelse(labs$Resultnum>labs$highthreshnum&labs$Resultnum<labs$veryhighthreshnum|labs$HighThreshText==1, 1, 0)
+labs$veryhigh<-ifelse(labs$Resultnum>labs$veryhighthreshnum, 1, 0)
+#This is a new edition
+labs$normal<-ifelse(labs$Resultnum>=labs$lowthreshnum & labs$Resultnum<=labs$highthreshnum, 1, 0)
+
+#Indicator Flag for anything and Column for what value it is
+labs$anyflag<-rowSums(cbind(labs$verylow, labs$low, labs$high, labs$veryhigh), na.rm=T)
+
+#labs$flagtype<-ifelse(labs$verylow==1, 'VeryLow', ifelse(labs$low==1, 'Low', ifelse(labs$high==1, 'High', ifelse(labs$veryhigh==1, 'VeryHigh', NA))))
+
+labs$highflagtype<-ifelse(labs$anyflag==1&labs$veryhigh==1, 'VeryHigh', ifelse(labs$anyflag==1&labs$high==1, 'High', NA))
+labs$lowflagtype<-ifelse(labs$anyflag==1&labs$verylow==1, 'VeryLow', ifelse(labs$anyflag==1&labs$low==1, 'Low', NA))
+labs$normalflagtype<-ifelse(labs$normal==1, 'Normal', NA)
+labs$flagtype<-paste(labs$highflagtype, labs$lowflagtype, labs$normalflagtype)
+labs$flagtype<-gsub(pattern="NA", replacement = "", labs$flagtype, perl=T)
+
+mrn<-sqldf("select m.*, l.* from m_table1 as m left join l_table1 as l on m.PMRN=l.PMRN")
+
+#Values
+
+
+#bringing in VTE dates and computing date diffs, absolute, before and after
+
+l_table2<-sqldf("select l.*, m.VTEDate, m.sex from labs l left outer join m on l.PMRN=m.PMRN")
+
+l_table2$diff<-as.numeric(difftime(l_table2$TestDate, l_table2$VTEDate, units="days"))
+l_table2$absdiff<-as.numeric(abs(l_table2$diff))
+l_table2$beforediff<-as.numeric(ifelse(sign(l_table2$diff)==-1, l_table2$absdiff, ''))
+l_table2$afterdiff<-as.numeric(ifelse(sign(l_table2$diff)==1, l_table2$absdiff, ''))
+
+
+
+#pivot Wider? 
+
+#Per Test Group grabbing the minimum abs value per PMRN before and after
+#THere's a weird issue with LUP values, check notes for which ones are before and after and then program it to be 2 days out bs 1 year out
+
+
+
+s<-subset(l_table2, PMRN=='10045904702'&Group_Id=='HCT')
+
+
+#HCT
+l_tablehct<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('HCT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablehct_before<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('HCT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+
+#HGB 
+l_tablehgb<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('HGB', 'HGB-POC') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablehgb_before<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('HGB', 'HGB-POC') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+ 
+
+#PLAT
+l_tableplat<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('PLT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableplat_before<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('PLT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#PT_INR
+l_tableptinr<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('PT_INR') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableptinr_before<-sqldf("select PMRN, TestDate, VTEDate, Group_ID, Resultnum, flagtype, diff from l_table2 where Group_ID in ('PT_INR') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#APTT
+l_tableaptt<-sqldf("select PMRN, TestDate, VTEDate, Test_Id, Resultnum, flagtype, diff from l_table2 where Test_Id in ('APTT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableaptt_before<-sqldf("select PMRN, TestDate, VTEDate, Test_Id, Resultnum, flagtype, diff from l_table2 where Test_Id in ('APTT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#PTT
+l_tableptt<-sqldf("select PMRN, TestDate, VTEDate, Test_Id, Resultnum, flagtype, diff from l_table2 where Test_Id in ('PTT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableptt_before<-sqldf("select PMRN, TestDate, VTEDate, Test_Id, Resultnum, flagtype, diff from l_table2 where Test_Id in ('PTT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+
+#LUPUS_ANTICOAGULANT
+#After
+l_tablelup<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('LUPUSSCR', 'DRVVT', 'DRVVT-SCR', 'LUPHEX') and afterdiff<=365 group by PMRN having min(afterdiff)=afterdiff")
+l_tablelup_after<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('LUPUSSCR', 'DRVVT', 'DRVVT-SCR', 'LUPHEX') and afterdiff<=2 group by PMRN having min(afterdiff)=afterdiff")
+
+#Beta_2_Glycoprot_IGA
+l_tablebeta2_glycoiga<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPA') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablebeta2_glycoiga_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPA') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#Beta_2_Glycoprot_IGG
+l_tablebeta2_glycoigg<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPG') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablebeta2_glycoigg_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPG') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#Beta_2_Glycoprot_IGM
+l_tablebeta2_glycoigm<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPM') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablebeta2_glycoigm_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPM') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#Activated_Prot_C_Resistance
+#After
+l_tablebeta2_activprotc<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('APCRSC', 'APCR-CFM') and afterdiff<=365 group by PMRN having min(afterdiff)=afterdiff")
+l_tablebeta2_activprotc_after<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('B2GPM', 'APCR-CFM') and afterdiff<=2 group by PMRN having min(afterdiff)=afterdiff")
+
+#Prot_C
+#After
+l_tableprotc<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('PROTCA') and afterdiff<=365 group by PMRN having min(afterdiff)=afterdiff")
+l_tableprotc_after<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('PROTCA') and afterdiff<=2 group by PMRN having min(afterdiff)=afterdiff")
+
+#Prot_S
+#After
+l_tableprots<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('PROTSF') and afterdiff<=365 group by PMRN having min(afterdiff)=afterdiff")
+l_tableprots_after<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('PROTSF') and afterdiff<=2 group by PMRN having min(afterdiff)=afterdiff")
+
+#TRIGL
+l_tabletrigl<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('TRIG') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tabletrigl_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('TRIG') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#URIC_ACID
+l_tableuricacid<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('URIC') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableuricacid_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('URIC') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#ESR
+l_tableesr<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('ESR') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableesr_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('ESR') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#ALT_GOT
+l_tablealt_got<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('SGOT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablealt_got_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('SGOT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#AST_SGPT
+l_tableast_sgpt<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('SGPT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableast_sgpt_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('SGPT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#GGT
+l_tableggt<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('GGT') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tableggt_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('GGT') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+#TOT_BILIRUBIN
+l_tabletotbili<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('TBILI') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tabletotbili_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('TBILI') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+
+#DIRECT_BILIRUBIN
+l_tabledirectbili<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('BILI') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tabledirectbili_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('BILI') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+
+#TROPONIN_T
+l_tabletropt<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('TROP-T', 'TROPTHS') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tabletropt_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('TROP-T', 'TROPTHS') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+
+#CPK
+l_tablecpk<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('CPK') and beforediff<=365 group by PMRN having min(beforediff)=beforediff")
+l_tablecpk_before<-sqldf("select PMRN, TestDate, VTEDate, Group_Id, Resultnum, flagtype, diff from l_table2 where Group_Id in ('CPK') and beforediff<=2 group by PMRN having min(beforediff)=beforediff")
+
+
+
+
+
+#Combining everything into one dataframe for analysis for 365 days
+
+masterdf<-sqldf("select mas.*, a.flagtype as HCTa,
+                  d.flagtype as HGBa, 
+                  g.flagtype as PLATa, 
+                  j.flagtype as PTINRa, 
+                  m.flagtype as APTTa, 
+                  p.flagtype as PTTa, 
+                  s.flagtype as LUPa, 
+                  v.flagtype as IGAa, 
+                  y.flagtype as IGGa, 
+                  bb.flagtype as IGMa,
+                  cc.flagtype as ACTIVEPROTCa,
+                  ee.flagtype as PROTCa, 
+                  hh.flagtype as PROTSa, 
+                  kk.flagtype as TRIGLa, 
+                  nn.flagtype as URICa, 
+                  qq.flagtype as ESRa, 
+                  tt.flagtype as ALTGOTa, 
+                  ww.flagtype as ASTSGPTa, 
+                  zz.flagtype as GGTa, 
+                  ccc.flagtype as TOTBILIa, 
+                  fff.flagtype as DIRECTBILIa, 
+                  iii.flagtype as TROPTa, 
+                  lll.flagtype as CPKa, 
+                  a.diff as HCTd, d.diff as HGBd,
+                  g.diff as PLATd, j.diff as PTINRd,
+                  m.diff as APTTd, p.diff as PTTd,
+                  s.diff as LUPd, v.diff as IGAd,
+                  y.diff as IGGd, bb.diff as IGMd,
+                  cc.diff as ACTIVEPROTCd,
+                  ee.diff as PROTCd, hh.diff as PROTSd,
+                  kk.diff as TRIGLd, nn.diff as URICd,
+                  qq.diff as ESRd, tt.diff as ALTGOTd,
+                  ww.diff as ASTSGPTd, zz.diff as GGTd,
+                  ccc.diff as TOTBILId, fff.diff as DIRECTBILId,
+                  iii.diff as TROPTd, lll.diff as CPKd
+                  
+                  from m as mas LEFT OUTER JOIN l_tablehct a on mas.PMRN=a.PMRN 
+                  LEFT OUTER JOIN l_tablehgb d on mas.PMRN=d.PMRN
+                  LEFT OUTER JOIN l_tableplat g on mas.PMRN=g.PMRN
+                  LEFT OUTER JOIN l_tableptinr j on mas.PMRN=j.PMRN
+                  LEFT OUTER JOIN l_tableaptt m on mas.PMRN=m.PMRN
+                  LEFT OUTER JOIN l_tableptt p on mas.PMRN=p.PMRN
+                  LEFT OUTER JOIN l_tablelup s on mas.PMRN=s.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_glycoiga v on mas.PMRN=v.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_glycoigg y on mas.PMRN=y.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_glycoigm bb on mas.PMRN=bb.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_activprotc cc on mas.PMRN=cc.PMRN
+                  LEFT OUTER JOIN l_tableprotc ee on mas.PMRN=ee.PMRN
+                  LEFT OUTER JOIN l_tableprots hh on mas.PMRN=hh.PMRN
+                  LEFT OUTER JOIN l_tabletrigl kk on mas.PMRN=kk.PMRN
+                  LEFT OUTER JOIN l_tableuricacid nn on mas.PMRN=nn.PMRN
+                  LEFT OUTER JOIN l_tableesr qq on mas.PMRN=qq.PMRN
+                  LEFT OUTER JOIN l_tablealt_got tt on mas.PMRN=tt.PMRN
+                  LEFT OUTER JOIN l_tableast_sgpt ww on mas.PMRN=ww.PMRN
+                  LEFT OUTER JOIN l_tableggt zz on mas.PMRN=zz.PMRN
+                  LEFT OUTER JOIN l_tabletotbili ccc on mas.PMRN=ccc.PMRN
+                  LEFT OUTER JOIN l_tabledirectbili fff on mas.PMRN=fff.PMRN
+                  LEFT OUTER JOIN l_tabletropt iii on mas.PMRN=iii.PMRN
+                  LEFT OUTER JOIN l_tablecpk lll on mas.PMRN=lll.PMRN")
+
+#COmbining everything for 2 days
+
+masterdf2days<-sqldf("select mas.*, a.flagtype as HCTa,
+                  d.flagtype as HGBa, 
+                  g.flagtype as PLATa, 
+                  j.flagtype as PTINRa, 
+                  m.flagtype as APTTa, 
+                  p.flagtype as PTTa, 
+                  s.flagtype as LUPa, 
+                  v.flagtype as IGAa, 
+                  y.flagtype as IGGa, 
+                  bb.flagtype as IGMa,
+                  cc.flagtype as ACTIVEPROTCa,
+                  ee.flagtype as PROTCa, 
+                  hh.flagtype as PROTSa, 
+                  kk.flagtype as TRIGLa, 
+                  nn.flagtype as URICa, 
+                  qq.flagtype as ESRa, 
+                  tt.flagtype as ALTGOTa, 
+                  ww.flagtype as ASTSGPTa, 
+                  zz.flagtype as GGTa, 
+                  ccc.flagtype as TOTBILIa, 
+                  fff.flagtype as DIRECTBILIa, 
+                  iii.flagtype as TROPTa, 
+                  lll.flagtype as CPKa, 
+                  a.diff as HCTd, d.diff as HGBd,
+                  g.diff as PLATd, j.diff as PTINRd,
+                  m.diff as APTTd, p.diff as PTTd,
+                  s.diff as LUPd, v.diff as IGAd,
+                  y.diff as IGGd, bb.diff as IGMd,
+                  cc.diff as ACTIVEPROTCd,
+                  ee.diff as PROTCd, hh.diff as PROTSd,
+                  kk.diff as TRIGLd, nn.diff as URICd,
+                  qq.diff as ESRd, tt.diff as ALTGOTd,
+                  ww.diff as ASTSGPTd, zz.diff as GGTd,
+                  ccc.diff as TOTBILId, fff.diff as DIRECTBILId,
+                  iii.diff as TROPTd, lll.diff as CPKd
+                  
+                  from m as mas LEFT OUTER JOIN l_tablehct_before a on mas.PMRN=a.PMRN 
+                  LEFT OUTER JOIN l_tablehgb_before d on mas.PMRN=d.PMRN
+                  LEFT OUTER JOIN l_tableplat_before g on mas.PMRN=g.PMRN
+                  LEFT OUTER JOIN l_tableptinr_before j on mas.PMRN=j.PMRN
+                  LEFT OUTER JOIN l_tableaptt_before m on mas.PMRN=m.PMRN
+                  LEFT OUTER JOIN l_tableptt_before p on mas.PMRN=p.PMRN
+                  LEFT OUTER JOIN l_tablelup_after s on mas.PMRN=s.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_glycoiga_before v on mas.PMRN=v.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_glycoigg_before y on mas.PMRN=y.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_glycoigm_before bb on mas.PMRN=bb.PMRN
+                  LEFT OUTER JOIN l_tablebeta2_activprotc_after cc on mas.PMRN=cc.PMRN
+                  LEFT OUTER JOIN l_tableprotc_after ee on mas.PMRN=ee.PMRN
+                  LEFT OUTER JOIN l_tableprots_after hh on mas.PMRN=hh.PMRN
+                  LEFT OUTER JOIN l_tabletrigl_before kk on mas.PMRN=kk.PMRN
+                  LEFT OUTER JOIN l_tableuricacid_before nn on mas.PMRN=nn.PMRN
+                  LEFT OUTER JOIN l_tableesr_before qq on mas.PMRN=qq.PMRN
+                  LEFT OUTER JOIN l_tablealt_got_before tt on mas.PMRN=tt.PMRN
+                  LEFT OUTER JOIN l_tableast_sgpt_before ww on mas.PMRN=ww.PMRN
+                  LEFT OUTER JOIN l_tableggt_before zz on mas.PMRN=zz.PMRN
+                  LEFT OUTER JOIN l_tabletotbili_before ccc on mas.PMRN=ccc.PMRN
+                  LEFT OUTER JOIN l_tabledirectbili_before fff on mas.PMRN=fff.PMRN
+                  LEFT OUTER JOIN l_tabletropt_before iii on mas.PMRN=iii.PMRN
+                  LEFT OUTER JOIN l_tablecpk_before lll on mas.PMRN=lll.PMRN")
+
+
+#write.xlsx(l_table2, "RefSex.xlsx")

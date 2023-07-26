@@ -1,0 +1,207 @@
+library(ggplot2)
+library(dplyr)
+library(kableExtra)
+setwd("//rfawin.partners.org/mgh-biostats/als/platform/ws/donahue/ALS DVT")
+source("DataCleaningScript06_21_2023.R")
+
+mdf<-filter(masterdf, VTEALSdiff>=-24)
+
+#Sex
+sex<-as.data.frame(mdf%>%group_by(sex)%>%summarize(n=n()))
+colnames(sex)<-c('variable', 'value')
+sex$value<-as.character(sex$value)
+sex[1,1]<-'Female'
+sex[2,1]<-'Male'
+
+#Age
+ageavg<-mdf%>%summarize(avg=round(mean(age, na.rm=T),2))
+agesd<-mdf%>%summarize(sd=round(sd(age, na.rm = T),2))
+agestat<-paste0(ageavg, ' (', agesd, ')')
+agelab<-paste0('avg')
+age<-as.data.frame(cbind(agelab, agestat))
+colnames(age)<-c('variable', 'value')
+
+#Race (labeled as ethnicity in the dataset)
+eth<-as.data.frame(mdf%>%group_by(Ethnicity)%>%summarize(n=n()))
+colnames(eth)<-c('variable', 'value')
+eth[1,1]<-'White'
+eth[2,1]<-'Black'
+eth[3,1]<-'Asian'
+eth[4,1]<-'Other'
+
+#Veteran Status
+vet<-as.data.frame(mdf%>%group_by(Vet_status)%>%summarize(n=n()))
+colnames(vet)<-c('variable', 'value')
+
+
+#Average and SD time to VTE
+vtemosavg<-mdf%>%summarize(avg=round(mean(VTEALSdiff, na.rm=T),2))
+vtemossd<-mdf%>%summarize(sd=round(sd(VTEALSdiff, na.rm = T),2))
+vtemosstat<-paste0(vtemosavg, ' (', vtemossd, ')')
+vtemoslab<-paste0('avg')
+vtemos<-as.data.frame(cbind(vtemoslab, vtemosstat))
+colnames(vtemos)<-c('variable', 'value')
+
+
+#MND Diagnosis Category
+mndcat<-as.data.frame(mdf%>%group_by(MND.Diagnosis.Category)%>%summarize(n=n()))
+colnames(mndcat)<-c('variable', 'value')
+mndcat[1,1]<-'ALS'
+mndcat[2,1]<-'PLS'
+mndcat[3,1]<-'Other'
+
+#MND Onset Region
+mndreg<-as.data.frame(mdf%>%group_by(`MND.onset.region.(numbers)`)%>%summarize(n=n()))
+colnames(mndreg)<-c('variable', 'value')
+mndreg[1,1]<-'Limb Onset Lower Extremity'
+mndreg[2,1]<-'Limb Onset Upper Extremity'
+mndreg[3,1]<-'Limb Onset Not Otherwise Specified'
+mndreg[4,1]<-'Bulbar Onset'
+mndreg[5,1]<-'Respiratory'
+mndreg[6,1]<-'Other or Unk'
+
+
+#ALSFSR Score
+alsfsravg<-mdf%>%summarize(avg=round(mean(VTEALSdiff, na.rm=T),2))
+alsfsrsd<-mdf%>%summarize(sd=round(sd(VTEALSdiff, na.rm = T),2))
+alsfsrstat<-paste0(alsfsravg, ' (', alsfsrsd, ')')
+alsfsrlab<-paste0('avg')
+alsfsr<-as.data.frame(cbind(alsfsrlab, alsfsrstat))
+colnames(alsfsr)<-c('variable', 'value')
+
+
+#Falls
+falls<-as.data.frame(mdf%>%group_by(Falls)%>%summarize(n=n()))
+colnames(falls)<-c('variable', 'value')
+
+#G.tube
+gtube<-as.data.frame(mdf%>%group_by(G.tube)%>%summarize(n=n()))
+colnames(gtube)<-c('variable', 'value')
+gtube[1,1]<-'No'
+gtube[2,1]<-'Yes'
+
+#Trach
+trach<-as.data.frame(mdf%>%group_by(Trach)%>%summarize(n=n()))
+colnames(trach)<-c('variable', 'value')
+trach[1,1]<-'No'
+trach[2,1]<-'Yes'
+trach[3,1]<-'Unknown'
+
+#WheelChair
+wheelchair<-as.data.frame(mdf%>%group_by(Wheel_Chair)%>%summarize(n=n()))
+colnames(wheelchair)<-c('variable', 'value')
+wheelchair[1,1]<-'No'
+wheelchair[2,1]<-'Yes'
+wheelchair[3,1]<-'Unknown'
+wheelchair[4,1]<-'Missing'
+
+#SOD1
+sod1<-as.data.frame(mdf%>%group_by(SOD1)%>%summarize(n=n()))
+colnames(sod1)<-c('variable', 'value')
+sod1[1,1]<-'No'
+sod1[2,1]<-'Positive'
+
+#C9ORF72
+c90rf72<-as.data.frame(mdf%>%group_by(C9ORF72)%>%summarize(n=n()))
+colnames(c90rf72)<-c('variable', 'value')
+c90rf72[1,1]<-'No'
+c90rf72[2,1]<-'Positive'
+
+#Hypertension
+hyp<-as.data.frame(mdf%>%group_by(Hypertension)%>%summarize(n=n()))
+colnames(hyp)<-c('variable', 'value')
+hyp[1,1]<-'No'
+hyp[2,1]<-'Yes'
+
+#Diabetes
+diab<-as.data.frame(mdf%>%group_by(Diabetes)%>%summarize(n=n()))
+colnames(diab)<-c('variable', 'value')
+
+
+#Smoking
+smok<-as.data.frame(mdf%>%group_by(Diabetes)%>%summarize(n=n()))
+colnames(smok)<-c('variable', 'value')
+smok[1,1]<-'No'
+smok[2,1]<-'Yes'
+smok[3,1]<-'Unknown'
+
+#Depression
+depres<-as.data.frame(mdf%>%group_by(Depression)%>%summarize(n=n()))
+colnames(depres)<-c('variable', 'value')
+depres[1,1]<-'No'
+depres[2,1]<-'Yes'
+depres[3,1]<-'Unknown'
+
+
+#Cancer
+cancer<-as.data.frame(mdf%>%group_by(Cancer)%>%summarize(n=n()))
+colnames(cancer)<-c('variable', 'value')
+cancer[1,1]<-'No'
+cancer[2,1]<-'Yes'
+cancer[3,1]<-'Unknown'
+
+
+#Stroke
+stk<-as.data.frame(mdf%>%group_by(Stroke)%>%summarize(n=n()))
+colnames(stk)<-c('variable', 'value')
+stk[1,1]<-'No'
+stk[2,1]<-'Yes'
+
+#MI
+mi<-as.data.frame(mdf%>%group_by(MI)%>%summarize(n=n()))
+colnames(mi)<-c('variable', 'value')
+mi[1,1]<-'No'
+mi[2,1]<-'Yes'
+
+#PE
+pe<-as.data.frame(mdf%>%group_by(PE)%>%summarize(n=n()))
+colnames(pe)<-c('variable', 'value')
+pe[1,1]<-'No'
+pe[2,1]<-'Yes'
+
+#TROPT
+tropt<-as.data.frame(mdf%>%group_by(TROPTa)%>%summarize(n=n()))
+colnames(tropt)<-c('variable', 'value')
+tropt[1,1]<-'Blank'
+tropt[4,1]<-'Very High'
+tropt[5,1]<-'Not Done'
+
+#ALTGOT
+altgot<-as.data.frame(mdf%>%group_by(ALTGOTa)%>%summarize(n=n()))
+colnames(altgot)<-c('variable', 'value')
+altgot[1,1]<-'Blank'
+altgot[4,1]<-'Very High'
+altgot[5,1]<-'Not Done'
+
+#ASTSGPT
+astsgpt<-as.data.frame(mdf%>%group_by(ASTSGPTa)%>%summarize(n=n()))
+colnames(astsgpt)<-c('variable', 'value')
+astsgpt[1,1]<-'Blank'
+astsgpt[4,1]<-'Very High'
+astsgpt[5,1]<-'Not Done'
+
+t<-subset(mdf, TROPTa=="VeryHigh  ")
+unique(t$VTEALSdiff)
+
+tables<-rbind(sex, age, eth, vet, vtemos, mndcat, mndreg, alsfsr, 
+              falls, gtube, trach, wheelchair, sod1, c90rf72, hyp, diab, smok, depres, 
+              cancer, stk, mi, pe, tropt, altgot, astsgpt)
+
+rownames(tables)<-NULL
+colnames(tables)<-NULL
+
+
+
+object5<-tables%>%kbl(align='c', caption='Table 1')%>%kable_styling()%>%
+  pack_rows('Sex', 1, 2)%>%pack_rows('Age', 3, 3)%>%
+  pack_rows('Race', 4, 7)%>%pack_rows('Veteran Status', 8, 10)%>%pack_rows('Months to VTE', 11, 11)%>%
+  pack_rows('MND Category',12,14)%>%pack_rows('MND Onset Region',15,20)%>%pack_rows('ALSFSR', 21, 21)%>%
+  pack_rows('Falls', 22, 24)%>%pack_rows('GTube', 25 ,26)%>%pack_rows('Trach', 27, 29)%>%
+  pack_rows('Wheelchair', 30, 33)%>%pack_rows('SOD1',34,35)%>%pack_rows('c90rf72', 36, 37)%>%
+  pack_rows('Hypertension',38, 39)%>%pack_rows('Diabetes', 40, 42)%>%pack_rows('Smoking',43,45)%>%
+  pack_rows('Depression',46,48)%>%pack_rows('Cancer', 49, 51)%>%pack_rows('Stroke', 52, 53)%>%
+  pack_rows('MI', 54, 55)%>%pack_rows('PE',56,57)%>%pack_rows('TROPT', 58, 62)%>%pack_rows('ALTGOT', 63, 67)%>%
+  pack_rows('ASTSGPT', 68, 72)
+
+object5
+
