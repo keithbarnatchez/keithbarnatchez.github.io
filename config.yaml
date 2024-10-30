@@ -9,22 +9,25 @@ ignoreFiles:
   - \.Rmarkdown$
   - _cache$
 permalinks:
-  post: /:year/:month/:day/:slug/
+  post: /:year/:month/:day/:slug/ 
 menu:
   main:
     - name: Home
       url: /
       weight: 10
+    - name: Research
+      url: /research/
+      weight: 20
     - name: GitHub
       url: https://github.com/keithbarnatchez
     - name: Teaching
       url: /teaching/
-      weight: 20
+      weight: 30
     - name: CV
       url: /files/cv.pdf
     - name: Talks
       url: /talks/
-      weight: 30
+      weight: 40
 params:
   MathJaxCDN: //cdnjs.cloudflare.com/ajax/libs
   MathJaxVersion: 2.7.5
