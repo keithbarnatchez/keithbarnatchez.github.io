@@ -9,3 +9,4 @@ title: Talks and posters
 
 ## Posters
 - *Estimating Causal Effects with Error-Prone Exposures Using Control Variates* (American Causal Inference Conference 2024) [Poster](../files/posters/ACIC_Poster_2024_Final_KB.pdf)
+- *Efficient Estimation of Causal Effects Under Two-Phase Sampling with Error-Prone Outcome and Treatment Measurements* (American Causal Inference Conference 2025) [Poster](../files/posters/KB_ACIC_Poster_2025.pdf)
