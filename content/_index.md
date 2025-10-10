@@ -26,9 +26,9 @@ You can contact me at `keithbarnatchez@g.harvard.edu`
 
 ### News
 
+- Our paper *Efficient Estimation of Causal Effects Under Two-Phase Sampling with Error-Prone Outcome and Treatment Measurements* was co-awarded best student poster at the 2025 New England Rare Disease Statistics (NERDS) Workshop! Our pre-print can be found on [arXiv](https://arxiv.org/pdf/2506.21777).
+
 - Our manuscript *Flexible and Efficient Estimation of Causal Effects with Error-Prone Exposures: A Control Variates Approach for Measurement Error*  was accepted to *Biometrics*! You can view our pre-print on [arXiv](https://arxiv.org/pdf/2410.12590).
 
 - Our R package **drcmd**: *Doubly-Robust Causal Inference with Missing Data* is now available through [GitHub](https://github.com/keithbarnatchez/drcmd). Please check back frequently, as the packge is being actively updated!
-
-- A pre-print of our manuscript *Efficient Estimation of Causal Effects Under Two-Phase Sampling with Error-Prone Outcome and Treatment Measurements* is now available on [arXiv](https://arxiv.org/pdf/2506.21777).
  
