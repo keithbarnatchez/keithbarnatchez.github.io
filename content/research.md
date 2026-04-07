@@ -4,7 +4,7 @@ title: Research
 
 [Google scholar](https://scholar.google.com/citations?user=af7SiOgAAAAJ&hl=en)
 
-- **Barnatchez, K.**, Josey, K. P., Nethery, R., E., Parmigiani, G. (2026). *In Proceedings, 5th Conference on Causal Learning and Reasoning (CLeaR).* [[arXiv link]](https://arxiv.org/pdf/2604.03772).
+- **Barnatchez, K.**, Josey, K. P., Nethery, R., E., Parmigiani, G. (2026). *Debiased MAchine Learning for Conformal Prediction of Counterfactual Outcomes Under Runtime Confounding*. *In Proceedings, 5th Conference on Causal Learning and Reasoning (CLeaR).* [[arXiv link]](https://arxiv.org/pdf/2604.03772).
 
 - **Barnatchez, K.**, Josey, K. P., Hejazi, N. S., Shepherd, B. E., Parmigiani, G., & Nethery, R. (2025). *Efficient Estimation of Causal Effects Under Two-Phase Sampling with Error-Prone Outcome and Treatment Measurements.* arXiv preprint arXiv:2506.21777.
 
