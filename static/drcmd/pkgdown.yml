@@ -1,0 +1,9 @@
+pandoc: 3.6.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  drcmd-vignette: drcmd-vignette.html
+last_built: 2026-06-15T12:35Z
+urls:
+  reference: https://keithbarnatchez.github.io/drcmd/reference
+  article: https://keithbarnatchez.github.io/drcmd/articles
