@@ -4,6 +4,8 @@ title: Research
 
 [Google scholar](https://scholar.google.com/citations?user=af7SiOgAAAAJ&hl=en)
 
+- Murali, N., **Barnatchez, K.**, Hoppe, J. E., Wagner, B. D., Keller, K. P., & Josey, K. P. *Causal Inference with Multiple Misclassified Exposures: A Control Variate-Adjusted Calibration Weighting Approach.* arXiv preprint arXiv:2506.21777. [[arXiv link]](https://arxiv.org/abs/2606.23656).
+
 - **Barnatchez, K.**, Josey, K. P., Nethery, R., E., Parmigiani, G. (2026). *Debiased Machine Learning for Conformal Prediction of Counterfactual Outcomes Under Runtime Confounding*. *In Proceedings, 5th Conference on Causal Learning and Reasoning (CLeaR).* [[arXiv link]](https://arxiv.org/pdf/2604.03772).
 
 - **Barnatchez, K.**, Josey, K. P., Hejazi, N. S., Shepherd, B. E., Parmigiani, G., & Nethery, R. (2025). *Efficient Estimation of Causal Effects Under Two-Phase Sampling with Error-Prone Outcome and Treatment Measurements.* arXiv preprint arXiv:2506.21777.

@@ -28,6 +28,8 @@ You can contact me at `kbarnat1@jh.edu`.
 
 ### News
 
+- Our paper *Causal Inference with Multiple Misclassified Exposures: A Control Variate-Adjusted Calibration Weighting Approach* is now available on [arXiv](https://arxiv.org/abs/2606.23656).
+
 - Our paper *Debiased Machine Learning for Conformal Prediction of Counterfactual Outcomes Under Runtime Confounding* was selected for an oral presentation at the 5th Conference on Causal Learning and Reasoning (CLeaR)!
 
 - Our paper *Efficient Estimation of Causal Effects Under Two-Phase Sampling with Error-Prone Outcome and Treatment Measurements* was co-awarded best student poster at the 2025 New England Rare Disease Statistics (NERDS) Workshop! Our pre-print can be found on [arXiv](https://arxiv.org/pdf/2506.21777).
