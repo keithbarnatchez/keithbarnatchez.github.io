@@ -10,7 +10,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/keithbarnatchez/drcmd/blob/HEAD/inst/CITATION)
+[`inst/CITATION`](https://github.com/keithbarnatchez/drcmd/blob/main/inst/CITATION)
 
 Barnatchez K, DesRoches G (2025). *drcmd: Doubly-Robust Causal Inference
 with Missing Data*. R package version 0.0.0.9000,

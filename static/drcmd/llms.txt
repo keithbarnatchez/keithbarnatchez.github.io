@@ -15,20 +15,50 @@ in Kennedy (2016), Tsiatis (2006), and van der Laan and Robins (2003).
 Users can fit nuisance functions through Super Learner (a stacking
 algorithm).
 
-## Please see the package vignette and documentation for further details.
+Please see the package vignette and documentation for further details.
+Full documentation is available at the [package
+website](https://kbarnatchez.com/drcmd/).
 
 ## Installation
 
 ``` r
+
 devtools::install_github('keithbarnatchez/drcmd')
 ```
 
-| \## Example |
-|:---|
-| \## Citation |
-| Kennedy, E. H. (2016). *Semiparametric theory and empirical processes in causal inference*. Statistical causal inferences and their applications in public health research, 141-167. |
-| Tsiatis, A. A. (2006). *Semiparametric theory and missing data* (Vol. 4). New York: Springer. |
-| van der Laan, M. J., & Robins, J. M. (2003). *Unified methods for censored longitudinal data and causality*. Springer New York. |
+## Example
+
+``` r
+
+# Params for functions
+eem_ind <- FALSE # TRUE = fit pseudo-outcome regression with empirical efficiency maximiztion
+default_learners <- c('SL.glm','SL.gam') # default learners used for nuisance functions 
+k <- 1 # number of cross-fitting folds
+#-------------------------------------------------------------------------------
+# Simulate simple missing outcome data structure
+n <- 1e3
+X <- rnorm(n) ; A <- rbinom(n,1,plogis(X)) ; Y <- rnorm(n) + A + X
+Ystar <- Y + rnorm(n)/2 ; R <- rbinom(n,1,plogis(X)) ; X <- as.data.frame(X)
+
+# Make Y NA if R==0
+Y[R==0] <- NA
+
+drcmd_res <- drcmd::drcmd(Y,A,X, 
+default_learners=default_learners,
+eem_ind=eem_ind,k=k)
+```
+
+## Citation
+
+Kennedy, E. H. (2016). *Semiparametric theory and empirical processes in
+causal inference*. Statistical causal inferences and their applications
+in public health research, 141-167.
+
+Tsiatis, A. A. (2006). *Semiparametric theory and missing data* (Vol.
+4). New York: Springer.
+
+van der Laan, M. J., & Robins, J. M. (2003). *Unified methods for
+censored longitudinal data and causality*. Springer New York.
 
 ## Contributing, reporting issues
 
@@ -44,29 +74,29 @@ devtools::install_github('keithbarnatchez/drcmd')
 
 Main entry point for doubly-robust estimation with missing data.
 
-- [`drcmd()`](https://keithbarnatchez.github.io/drcmd/reference/drcmd.md)
-  : Doubly-robust causal inference with missing data
+- [`drcmd()`](https://kbarnatchez.com/drcmd/reference/drcmd.md) :
+  Doubly-robust causal inference with missing data
 
 ## Nuisance estimation
 
 Helpers for specifying and fitting nuisance functions.
 
-- [`get_sl_libraries()`](https://keithbarnatchez.github.io/drcmd/reference/get_sl_libraries.md)
+- [`get_sl_libraries()`](https://kbarnatchez.com/drcmd/reference/get_sl_libraries.md)
   : List SuperLearner libraries
-- [`SL.hal9001()`](https://keithbarnatchez.github.io/drcmd/reference/SL.hal9001.md)
+- [`SL.hal9001()`](https://kbarnatchez.com/drcmd/reference/SL.hal9001.md)
   : SuperLearner wrapper for the highly-adaptive lasso
 
 ## Methods
 
 S3 methods for drcmd objects.
 
-- [`plot(`*`<drcmd>`*`)`](https://keithbarnatchez.github.io/drcmd/reference/plot.drcmd.md)
+- [`plot(`*`<drcmd>`*`)`](https://kbarnatchez.com/drcmd/reference/plot.drcmd.md)
   : Plot results from drcmd object
-- [`print(`*`<drcmd>`*`)`](https://keithbarnatchez.github.io/drcmd/reference/print.drcmd.md)
+- [`print(`*`<drcmd>`*`)`](https://kbarnatchez.com/drcmd/reference/print.drcmd.md)
   : Print drcmd object
-- [`summary(`*`<drcmd>`*`)`](https://keithbarnatchez.github.io/drcmd/reference/summary.drcmd.md)
+- [`summary(`*`<drcmd>`*`)`](https://kbarnatchez.com/drcmd/reference/summary.drcmd.md)
   : Summarize results from drcmd
-- [`predict(`*`<SL.hal9001>`*`)`](https://keithbarnatchez.github.io/drcmd/reference/predict.SL.hal9001.md)
+- [`predict(`*`<SL.hal9001>`*`)`](https://kbarnatchez.com/drcmd/reference/predict.SL.hal9001.md)
   : Prediction wrapper for the highly-adaptive lasso
 
 # Articles
@@ -74,4 +104,4 @@ S3 methods for drcmd objects.
 ### All vignettes
 
 - [\`drcmd\`: Doubly-Robust Causal Inference with Missing
-  Data](https://keithbarnatchez.github.io/drcmd/articles/drcmd-vignette.md):
+  Data](https://kbarnatchez.com/drcmd/articles/drcmd-vignette.md):
