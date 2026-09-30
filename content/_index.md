@@ -28,6 +28,8 @@ You can contact me at `kbarnat1@jh.edu`.
 
 ### News
 
+- A pre-print of our paper *Characterizing Survivor Principal Strata Over Time: Identification, Efficient Estimation, and Sensitivity Analysis* is now available on [arXiv](https://arxiv.org/pdf/2609.37821)!
+
 - Our paper *Causal Inference with Multiple Misclassified Exposures: A Control Variate-Adjusted Calibration Weighting Approach* is now available on [arXiv](https://arxiv.org/abs/2606.23656).
 
 - Our paper *Debiased Machine Learning for Conformal Prediction of Counterfactual Outcomes Under Runtime Confounding* was selected for an oral presentation at the 5th Conference on Causal Learning and Reasoning (CLeaR)!
