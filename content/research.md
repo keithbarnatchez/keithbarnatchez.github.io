@@ -4,6 +4,8 @@ title: Research
 
 [Google scholar](https://scholar.google.com/citations?user=af7SiOgAAAAJ&hl=en)
 
+- Kim, R., Santacatterina, M., Zabih, R., **Barnatchez, K.** *Reinforcement Learning Under Runtime Confounding: Policy Learning and Off-Policy Evaluation* arXiv preprint arXiv:2610.40056. [[arXiv link]](https://arxiv.org/abs/2610.40056)
+
 - **Barnatchez, K.**, Butler, B., Geller, J. A., Stuart, E. A. *Characterizing Survivor Principal Strata Over Time: Identification, Efficient Estimation, and Sensitivity Analysis.* arXiv preprint arXiv:2609.37821. [[arXiv link]](https://arxiv.org/pdf/2609.37821).
 
 - Murali, N., **Barnatchez, K.**, Hoppe, J. E., Wagner, B. D., Keller, K. P., & Josey, K. P. *Causal Inference with Multiple Misclassified Exposures: A Control Variate-Adjusted Calibration Weighting Approach.* arXiv preprint arXiv:2606.23656. [[arXiv link]](https://arxiv.org/abs/2606.23656).
