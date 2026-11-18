@@ -3,7 +3,7 @@ title: Talks and posters
 ---
 
 ## Talks
-- **Improving Precision in Clinical Trials with Repeated Outcome Measurements** (Johns Hopkins Clinical Pharmacology Research In Progress Seminar Series) [Slides](../files/talks/Keith-Barnatchez-Research-In-Progress.pdf)
+- *Improving Precision in Clinical Trials with Repeated Outcome Measurements* (Johns Hopkins Clinical Pharmacology Research In Progress Seminar Series) [Slides](../files/talks/Keith-Barnatchez-Research-In-Progress.pdf)
 - *Debiased Machine Learning for Conformal Prediction of Counterfactual Outcomes Under Runtime Confounding* (CLeaR 2026) [Slides](../files/talks/CLeaR-2026-Slides.pdf)
 - *Evaluation of Clinical Endpoints as Potential Surrogates of Clinical Progression of ALS: A Causal Mediation Approach* (MGH Biostatistics Seminar Series) [Slides](../files/talks/KB-MGH-Seminar.pdf)
 - `drcmd`: *An R package for doubly-robust causal inference with missing data* (Harvard Biostatistics Student Seminar Series) [Slides](../files/talks/drcmd-student-seminar.pdf)
